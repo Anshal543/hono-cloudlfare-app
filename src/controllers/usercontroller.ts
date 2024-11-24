@@ -84,6 +84,7 @@ export async function signin(c: Context) {
 
     const user = await prisma.user.findFirst({
       where: { email: body.email },
+      include: { posts: true },
     });
 
     if (!user) {
@@ -105,6 +106,7 @@ export async function signin(c: Context) {
         userId: user.id,
         email: user.email,
         username: user.username,
+        posts: user.posts,
       },
     });
   } catch (error) {

@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DIRECT_URL")
 }
 
 model User {
@@ -25,8 +25,14 @@ model Posts {
   id     Int      @id @default(autoincrement())
   title  String
   body   String
+  tags  Tags[]
   User   User     @relation(fields: [userId], references: [id])
   userId Int
   createdAt  DateTime   @default(now())
 }
 
+model Tags {
+  id Int @id @default(autoincrement())
+  tag String @unique
+  post Posts[]
+}
