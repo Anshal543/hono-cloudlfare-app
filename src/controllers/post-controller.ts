@@ -112,6 +112,9 @@ export async function getPostById(c: Context) {
             id: parseInt(c.req.param("id")),
             userId: parseInt(c.get("userId")),
         },
+        include:{
+            tags:true
+        }
         });
         if (!post) {
         return c.json({ message: "No post found" }, StatusCode.NOTFOUND);
@@ -130,17 +133,36 @@ export async function updatePost(c:Context) {
         const body: {
             title: string;
             body: string;
+            tags: string
         } = await c.req.json();
+        const tagNames = body.tags.split(",").map((tag) => tag.trim());
         const post = await prisma.posts.update({
             where:{
                 id:parseInt(c.req.param("id"))
             },
             data:{
                 title:body.title,
-                body:body.body
+                body:body.body,
+                tags:{
+                  connectOrCreate:tagNames.map((tag)=>({
+                    where:{tag},
+                    create:{tag}
+                  }))
+                }
+            },
+            include:{
+                tags:true
             }
         })
-        return c.json(post)
+        return c.json({
+          data :{
+            id: post.id,
+            title: post.title,
+            body: post.body,
+            userId: post.userId,
+            tags:post.tags.map((tag)=>tag.tag)
+          }
+        })
     } catch (error) {
         return c.json({ error: error }, StatusCode.BADREQ);
     }
